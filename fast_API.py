@@ -65,7 +65,10 @@ async def generate_qr(session_id: str):
 
 @app.get("/authenticate")
 async def authenticate(session_id: str):
-
+    if session_id:
+        return {"message": f"Session {session_id} authenticated successfully!"}
+    print("error": "Session ID is missing")
+    
     if session_id not in active_sessions:
         active_sessions[session_id] = "authenticated"
         return HTMLResponse(content="""
