@@ -23,24 +23,25 @@ async def home():
     """
     return HTMLResponse(content=html_content)
 
-"""
 @app.get("/generate_qr")
 async def generate_qr(session_id: str):
+    # Use your actual Render public URL
+    public_url = "https://your-app-name.onrender.com"
+    
+    # Generate the QR code
     qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(f"http://127.0.0.1:8000/authenticate?session_id={session_id}")
+    qr.add_data(f"{public_url}/authenticate?session_id={session_id}")
     qr.make(fit=True)
 
+    # Convert to PNG image
     img = qr.make_image(fill="black", back_color="white")
-
-    qr_path = os.path.join(desktop_path, "qr_code.png")
-    img.save(qr_path)
-
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     buffer.seek(0)
-    return StreamingResponse(buffer, media_type="image/png")
-"""
 
+    return StreamingResponse(buffer, media_type="image/png")
+    
+"""
 @app.get("/generate_qr")
 async def generate_qr(session_id: str):
     try:
@@ -59,6 +60,7 @@ async def generate_qr(session_id: str):
         # Log the error for debugging
         print(f"Error generating QR code: {e}")
         return {"error": "Failed to generate QR code"}
+        """
 
 
 @app.get("/authenticate")
