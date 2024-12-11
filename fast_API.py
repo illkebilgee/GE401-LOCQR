@@ -67,6 +67,13 @@ async def login(user_id: str = Form(...), password: str = Form(...)):
         return {"message": "Login successful!"}
     else:
         return {"message": "Invalid UserID or Password!"}
+        
+import os
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if PORT is not set
+    uvicorn.run("fast_API:app", host="0.0.0.0", port=port)
 
 
 #bu kod qr üreten bir siteye gidiyor o qr da başka bir siteye yönlendiriyor
