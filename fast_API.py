@@ -11,7 +11,7 @@ app = FastAPI()
 active_sessions = {}
 
 # Get the public URL from the environment or use a default value
-public_url = os.getenv("PUBLIC_URL", "https://your-app-name.onrender.com")
+public_url = os.getenv("PUBLIC_URL", "https://www.youtube.com")
 
 @app.get("/")
 async def home():
