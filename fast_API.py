@@ -4,15 +4,18 @@ import qrcode
 from io import BytesIO
 import os
 
+# Create the FastAPI application
 app = FastAPI()
 
+# Store active sessions
 active_sessions = {}
 
-desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+# Get the public URL from the environment or use a default value
+public_url = os.getenv("PUBLIC_URL", "https://your-app-name.onrender.com")
 
 @app.get("/")
 async def home():
-    html_content = """
+    html_content = f"""
     <html>
         <head><title>QR Code Login</title></head>
         <body>
@@ -25,41 +28,26 @@ async def home():
 
 @app.get("/generate_qr")
 async def generate_qr(session_id: str):
-    public_url = "https://your-app-name.onrender.com"
-    qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(f"{public_url}/authenticate?session_id={session_id}")
-    qr.make(fit=True)
-
-    img = qr.make_image(fill="black", back_color="white")
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-    buffer.seek(0)
-    return StreamingResponse(buffer, media_type="image/png")
-
-"""
-@app.get("/generate_qr")
-async def generate_qr(session_id: str):
-    # Use your actual Render public URL
-    public_url = "https://your-app-name.onrender.com"
+    # Generate the QR code URL
+    qr_url = f"{public_url}/authenticate?session_id={session_id}"
     
-    # Generate the QR code
+    # Create the QR code
     qr = qrcode.QRCode(version=1, box_size=10, border=4)
-    qr.add_data(f"{public_url}/authenticate?session_id={session_id}")
+    qr.add_data(qr_url)
     qr.make(fit=True)
 
-    # Convert to PNG image
+    # Convert the QR code to a PNG image
     img = qr.make_image(fill="black", back_color="white")
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     buffer.seek(0)
 
+    # Return the QR code image as a response
     return StreamingResponse(buffer, media_type="image/png")
-    """
-
 
 @app.get("/authenticate")
 async def authenticate(session_id: str):
-    
+    # Check if the session ID exists
     if session_id not in active_sessions:
         active_sessions[session_id] = "authenticated"
         return HTMLResponse(content="""
@@ -81,71 +69,14 @@ async def authenticate(session_id: str):
 
 @app.post("/login")
 async def login(user_id: str = Form(...), password: str = Form(...)):
+    # Validate login credentials
     if user_id == "admin" and password == "password":
         return {"message": "Login successful!"}
     else:
         return {"message": "Invalid UserID or Password!"}
-        
-import os
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))  # Default to 8000 if PORT is not set
-    uvicorn.run("fast_API:app", host="0.0.0.0", port=port)
-
-
-#bu kod qr üreten bir siteye gidiyor o qr da başka bir siteye yönlendiriyor
-# from fastapi import FastAPI, WebSocket
-# import qrcode
-# from io import BytesIO
-# from fastapi.responses import StreamingResponse, HTMLResponse
-
-# #cd /Users/ilkebilgeyevgi/Desktop
-# #uvicorn fast_API:app --reload
-
-# app = FastAPI()
-
-# active_sessions = {}
-
-# @app.get("/")
-# async def home():
-#     html_content = """
-#     <html>
-#         <head><title>QR Code Login</title></head>
-#         <body>
-#             <h1>Scan the QR Code to Login</h1>
-#             <img src="/generate_qr?session_id=12345" alt="QR Code">
-#         </body>
-#     </html>
-#     """
-#     return HTMLResponse(content=html_content)
-
-# @app.get("/generate_qr")
-# async def generate_qr(session_id: str):
-#     qr = qrcode.QRCode(version=1, box_size=10, border=4)
-#     qr.add_data(f"http://127.0.0.1:8000/authenticate?session_id={session_id}")
-#     qr.make(fit=True)
-
-#     img = qr.make_image(fill="black", back_color="white")
-#     buffer = BytesIO()
-#     img.save(buffer, format="PNG")
-#     buffer.seek(0)
-#     return StreamingResponse(buffer, media_type="image/png")
-
-# @app.get("/authenticate")
-# async def authenticate(session_id: str):
-#     if session_id not in active_sessions:
-#         active_sessions[session_id] = "authenticated"
-#         return {"message": "Authenticated successfully!"}
-#     return {"message": "Session already authenticated!"}
-
-# @app.websocket("/ws")
-# async def websocket_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     while True:
-#         for session, status in active_sessions.items():
-#             if status == "authenticated":
-#                 await websocket.send_text(f"Session {session} authenticated!")
-#                 active_sessions.pop(session)
-#                 break
-#         await websocket.receive_text()
+    # Get the port from the environment variable or use 8000 by default
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("qr_code_login:app", host="0.0.0.0", port=port)
