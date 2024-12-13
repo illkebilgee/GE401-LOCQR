@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Form
-from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi.responses import FileResponse, StreamingResponse, HTMLResponse
 import qrcode
 from io import BytesIO
 import os
@@ -11,20 +11,13 @@ app = FastAPI()
 active_sessions = {}
 
 # Get the public URL from the environment or use a default value
-public_url = os.getenv("PUBLIC_URL", "https://www.youtube.com")
+public_url = os.getenv("PUBLIC_URL", "https://your-app-name.onrender.com")
 
 @app.get("/")
 async def home():
-    html_content = f"""
-    <html>
-        <head><title>QR Code Login</title></head>
-        <body>
-            <h1>Scan the QR Code to Login</h1>
-            <img src="/generate_qr?session_id=12345" alt="QR Code">
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+    # Serve the uploaded HTML file
+    file_path = "qr_gen.html"  # Make sure this file is in the same directory as the script
+    return FileResponse(file_path)
 
 @app.get("/generate_qr")
 async def generate_qr(session_id: str):
@@ -80,3 +73,4 @@ if __name__ == "__main__":
     # Get the port from the environment variable or use 8000 by default
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("qr_code_login:app", host="0.0.0.0", port=port)
+
